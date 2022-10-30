@@ -11,15 +11,14 @@ from models.review import Review
 
 
 class FileStorage:
-    """Serializes instances to a JSON file and deserializes JSON file to instances.
+    """Represent a file storage engine.
 
     Attributes:
-        __file_path(str): Path to the JSON file
-        __objects(dict): An empty dictionary that will store all objects by <class name>.id
+    __file_path(str): Path to the JSON file.
+    __objects(dict): To store all objects by <class name>.id.
     """
     __file_path = "file.json"
     __objects = {}
-
 
     def all(self):
         """Return the dictionary __objects."""
@@ -27,24 +26,24 @@ class FileStorage:
 
     def new(self, obj):
         """Serialize __object obj with key <obj_class_name>.id"""
-        FileStorage.__objects["{}.{}".format(obj.__class__.__name__, obj.id)] = obj
+        i = obj.__class__.name__
+        FileStorage.__objects["{}.{}".format(i, obj.id)] = obj
 
     def save(self):
         """Serialize __objects to the Json file __file_path."""
-        json_objects = {}
-        for key in FileStorage.__objects:
-            json_objects[key] = FileStorage.__objects[key].to_dict()
+        odict = FileStorage.__objects
+        objdict = {obj: odict[obj].to_dict() for obj in odict.keys()}
         with open(FileStorage.__file_path, "w") as f:
-            json.dump(json_objects, f)
+            json.dump(objdict, f)
 
     def reload(self):
-        """Deserializes the Json file to __objects"""
+        """Deserializes the JSON file to __objects."""
         try:
-            with open(FileStorage.__file_path, 'r') as f:
+            with open(FileStorage.__file_path) as f:
                 objdict = json.load(f)
-            for key in objdict.values():
-                class_name = key["__class__"]
-                del key["__class__"]
-                self.new(eval(class_name)(**key))
+                for j in objdict.values():
+                    cls_name = j["__class__"]
+                    del j["__class__"]
+                    self.new(eval(cls_name)(**j))
         except FileNotFoundError:
             return
